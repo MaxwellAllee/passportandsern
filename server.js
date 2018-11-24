@@ -36,7 +36,7 @@ app.post("/login", (req, res)=> {
     if (password === user.password){
       console.log(process.env.SECRET)
       const token = jwt.sign(user.toJSON(),  process.env.SECRET);
-        res.json({success: true, token: 'JWT' + token})
+        res.json({success: true, token: 'JWT ' + token})
     }
     else {
       res.status(401).send({success: false, msg: "Authentication failed. Wrong password"})
@@ -51,7 +51,9 @@ app.use(passport.initialize())
 app.get("/api/test", passport.authenticate('jwt',{session:false}),( req,res)=>{
   res.send("It's working!!")
 })
-
+app.get("/api/message", passport.authenticate('jwt', { session: false }), (req, res) => {
+  res.json({ message: "Hello world" });
+})
 // Send every request to the React app
 // Define any API routes before this runs
 app.get("*", function(req, res) {
