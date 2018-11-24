@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require("express");
 
 
@@ -22,22 +23,26 @@ app.use(bodyParser.json());
 app.post("/login", (req, res)=> {
   const {email, password } =req.body
   db.User.findOne({
-    email: req.body.email
-  },(err, user) => {
-    if(err) throw err;
+    where: {
+    email
+  }
+  })
+  .then(user => {
 
     if (!user) {
       return res.status(401).json({success: false, msg: "Authentication failed."})
     }
     
     if (password === user.password){
-      const token = jwt.sign(user.toJSONM(), settings.secret);
+      console.log(process.env.SECRET)
+      const token = jwt.sign(user.toJSON(),  process.env.SECRET);
         res.json({success: true, token: 'JWT' + token})
     }
     else {
       res.status(401).send({success: false, msg: "Authentication failed. Wrong password"})
      }
   })
+  .catch(err => console.log(err))
 })
 
 
@@ -52,7 +57,7 @@ app.get("/api/test", passport.authenticate('jwt',{session:false}),( req,res)=>{
 app.get("*", function(req, res) {
   res.sendFile(path.join(__dirname, "./client/build/index.html"));
 });
-db.sequelize.sync({force:true})
+db.sequelize.sync({force:false})
 .then(()=>{
   app.listen(PORT, function() {
     console.log(`🌎 ==> Server now on port ${PORT}!`);
